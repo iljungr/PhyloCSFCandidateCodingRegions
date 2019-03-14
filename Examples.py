@@ -15,11 +15,12 @@ Run through examples that use the key algorithms of NovelPhyloCSFRegions project
 from __future__ import division
 from __future__ import print_function
 import os, sys
+from itertools import izip_longest
 from CommonUtils import pushd, popd, equal_files, err_msg, cp, rm, pjoin
 from HMMforPhyloCSFRegions import create_PhyloCSF_Regions
 from HMMparamsForMudge2019 import HMMparams
 from EstimateHMMparams import estimate_hmm_params_for_genome
-from SVMsForNovelPhyloCSFRegions import classify_regions, do_other_steps
+from SVMsForNovelPhyloCSFRegions import classify_regions, do_other_steps, get_reader
 
 assert sys.version_info[:2] == (2, 7), 'This is intended to run in Python 2.7.'
 
@@ -98,11 +99,20 @@ def svm_example() :
     # Fill in PhyloCSF fields, train and run SVMs, prune and sort regions, make bed file
     do_other_steps(homeDir, 100) # Real SVM used 10000 training vectors, but this is faster
 
-    for fileName in (['Regions.0%d.txt' % ii for ii in range(1, 5)] +
-                     ['Regions.pcsf.in', 'Regions.pcsf.out', 'PhyloCSFNovel.bed']) :
+    for fileName in ['Regions.01.txt', 'Regions.02.txt', 'Regions.04.txt',
+                     'Regions.pcsf.in', 'Regions.pcsf.out', 'PhyloCSFNovel.bed'] :
         assert equal_files(pjoin('ExampleFiles/SVMexample', fileName),
                            pjoin('ExampleFiles/Results',    fileName)), 'Files differ: %s' % fileName
         rm(pjoin('ExampleFiles/SVMexample', fileName))
+    # Some values in Regions.03.txt differ slightly on linux and mac, so can't use equal_files.
+    for lineNew, lineOld in izip_longest(get_reader('ExampleFiles/SVMexample/Regions.03.txt'),
+                                         get_reader('ExampleFiles/Results/Regions.03.txt')) :
+        for key in lineNew.keys() :
+            if isinstance(lineNew[key], float) :
+                assert abs(lineNew[key] - lineOld[key]) < 1e-9
+            else :
+                assert lineNew[key] == lineOld[key]
+    rm('ExampleFiles/SVMexample/Regions.03.txt')
                      
     err_msg('\nYay! Result files match precomputed files.')
     popd()
