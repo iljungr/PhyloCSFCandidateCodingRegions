@@ -10,7 +10,7 @@
 # limitations under the License.
 """
 Examples.py
-Run through examples that use the key algorithms of NovelPhyloCSFRegions project.
+Run examples that use the key algorithms of the PhyloCSFCandidateCodingRegions project.
 """
 from __future__ import division
 from __future__ import print_function
@@ -20,17 +20,20 @@ from CommonUtils import pushd, popd, equal_files, err_msg, cp, rm, pjoin
 from HMMforPhyloCSFRegions import create_PhyloCSF_Regions
 from HMMparamsForMudge2019 import HMMparams
 from EstimateHMMparams import estimate_hmm_params_for_genome
-from SVMsForNovelPhyloCSFRegions import classify_regions, do_other_steps, get_reader
+from SVMsForPhyloCSFCandidateCodingRegions import classify_regions, do_other_steps, get_reader
+from ScoreSpliceCandidate import DonorPredictor, AcceptorPredictor
 
 assert sys.version_info[:2] == (2, 7), 'This is intended to run in Python 2.7.'
 
 def main() :
-    if len(sys.argv) != 2 or sys.argv[1] not in ['svm', 'hmm'] :
-        print('Run with argument "svm" or "hmm".', file = sys.stderr)
+    if len(sys.argv) != 2 or sys.argv[1] not in ['svm', 'hmm', 'splice'] :
+        print('Run with argument "svm", "hmm", "splice".', file = sys.stderr)
     elif sys.argv[1] == 'hmm' :
         hmm_example()
-    else :
+    elif sys.argv[1] == 'svm' :
         svm_example()
+    else :
+        splice_example()
 
 def hmm_example() :
     "Calculate HMM parameters and then run HMM for one reading frame of one scaffold"
@@ -116,6 +119,22 @@ def svm_example() :
                      
     err_msg('\nYay! Result files match precomputed files.')
     popd()
-       
+
+def splice_example() :
+    donorPredictor    = DonorPredictor(   'ExampleFiles/SpliceExample/Hsap.donor.mecoef')
+    acceptorPredictor = AcceptorPredictor('ExampleFiles/SpliceExample/Hsap.acceptor.mecoef')
+
+    # Predict donor score for TCA-GT-AAGG
+    bases = 'TCAGTAAGG'
+    score = donorPredictor(bases[0 : 3], bases[5 : 9])
+    assert abs(score - 5.685921922927156) < 1e-9, score
+
+    # Predict acceptor score for CAATGGTTAGTTTCAGTA-AG-GAA
+    bases = 'CAATGGTTAGTTTCAGTAAGGAA'
+    score = acceptorPredictor(bases[0 : 18], bases[20 : 23])
+    assert abs(score - -3.033034001453567) < 1e-9, score
+
+    err_msg('\nYay! Results match precomputed values.')
+
 if __name__ == '__main__' :
     main()

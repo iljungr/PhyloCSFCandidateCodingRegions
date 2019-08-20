@@ -13,7 +13,7 @@ Determine the PhyloCSF Regions most likely to be unannotated coding regions, by 
   ones that overlap known coding regions in the same frame or antisense frame and known
   pseudogenes in any frame, regions less than 9 codons long, and regions deemed more
   likely to be novel antisense regions than novel coding ones.
-Sort the resulting Novel PhyloCSF Regions starting with those most likely to be coding.
+Sort the resulting PhyloCSF Candidate Coding Regions starting with those most likely to be coding.
 The PhyloCSF Regions must have been previously created using the HMM.
 This script requires rpy2 for the SVM step. Before invoking that the e1071 package must be
     installed, which can be done by calling ClassSVM.install_e1071 from an interactive
@@ -22,9 +22,9 @@ This script requires rpy2 for the SVM step. Before invoking that the e1071 packa
 Steps 1-5 need to be executed sequentially, each step using the output from the previous
 and sometimes other inputs. The resulting and intermediate files go in the same
 directory "homeDir". The final results are:
-    Regions.04.txt: A Tab-delimited spreadsheet with one line for each Novel PhyloCSF
-                    Region, in order, including the various scores associated with it.
-    PhyloCSFNovel.bed: A bed-format file with the Novel PhyloCSF Regions, in order.
+    Regions.04.txt: A Tab-delimited spreadsheet with one line for each PhyloCSF Candidate
+                    Coding Region, in order, including the various scores associated with it.
+    PhyloCSFNovel.bed: A bed-format file with the PhyloCSF Candidate Coding Regions, in order.
 """
 from __future__ import division
 from __future__ import print_function
@@ -401,7 +401,7 @@ def make_bed(homeDir) :
     """
     Input: Regions.04.txt
     Output: PhyloCSFNovel.bed.
-    Output novel PhyloCSF regions in bed format for browser tracks.
+    Output PhyloCSF Candidate Coding Regions in bed format for browser tracks.
     
     """
     err_msg('Writing .bed file.')
